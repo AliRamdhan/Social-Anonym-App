@@ -17,6 +17,9 @@ export default function Solusi() {
   const [postCommentSolutions, setPostCommentSolutions] = useState({});
   const [replyIndex, setReplyIndex] = useState(solutions.map(() => false));
 
+  const [topSolusi, setTopSolusi] = useState([]);
+  const [latestSolusi, setLatestSolusi] = useState([]);
+
   const [commentCount, setCommentCount] = useState("");
   const [likeCount, setLikeCount] = useState("");
 
@@ -28,6 +31,14 @@ export default function Solusi() {
 
     UserService.getAllPost().then((response) => {
       setSolutions(response.data.Posts);
+    });
+
+    UserService.getTopSolusi().then((response) => {
+      setTopSolusi(response.data.Post);
+    });
+
+    UserService.getLatestSolusi().then((response) => {
+      setLatestSolusi(response.data.Post);
     });
   }, []);
 
@@ -122,7 +133,7 @@ export default function Solusi() {
     <div>
       <Header />
       <div className="w-full min-h-screen flex justify-center px-5">
-        <div className="w-4/6 py-2">
+        <div className="w-4/6 p-2">
           <div className="w-full h-24 flex flex-col justify-center">
             {user && (
               <div className="font-bold text-3xl text-gray-800">
@@ -366,7 +377,7 @@ export default function Solusi() {
               </div>
             ))}
         </div>
-        <div className="w-2/6">
+        <div className="w-2/6 mt-24">
           {/* Top Solusi */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
@@ -376,15 +387,35 @@ export default function Solusi() {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {topSolusi.map((solusi, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {solusi.Post_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                    <p className="mr-2.5">
+                      <span className="font-bold"> {solusi.commentCount}</span>{" "}
+                      Comments
+                    </p>
+                    <p className="ml-2.5">
+                      <span className="font-bold">{solusi.likeCount} </span>{" "}
+                      Likes{" "}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
 
           {/* New Solusi */}
@@ -396,15 +427,37 @@ export default function Solusi() {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {latestSolusi.map((solusi, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {solusi.Post_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                    <p>{FormatTime.formatTime(solusi.createdAt)}</p>
+
+                    <p>||</p>
+                    <p>
+                      {new Date(solusi.createdAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
         </div>
       </div>

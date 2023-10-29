@@ -54,8 +54,6 @@ const Solusi_Details = () => {
     });
   }, [commentSolutions]);
 
-  const hasLike = liked.some((data) => data.Likes_Users === user);
-
   const createPostComment = async (e) => {
     e.preventDefault();
     try {
@@ -156,10 +154,10 @@ const Solusi_Details = () => {
                       <button onClick={createLikesPost}>
                         <svg
                           className="text-center text-gray-400 h-6 w-6"
-                          fill={`${hasLike ? "red" : "none"}`}
+                          fill={`none`}
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={`${hasLike ? "0" : "2"}`}
+                          strokeWidth={`2`}
                           stroke="currentColor"
                           viewBox="0 0 24 24"
                         >

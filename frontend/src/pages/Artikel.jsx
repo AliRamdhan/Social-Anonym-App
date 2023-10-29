@@ -25,7 +25,7 @@ const Artikel = () => {
                 <Link to={`/artikel/2/nama`}>
                   <img
                     alt=""
-                    className="object-cover w-full h-52"
+                    className="object-contain  w-full h-52 object-center"
                     src={`http://localhost:5000/images/article/${artikel.Artikel_Picture}`}
                   />
                 </Link>
@@ -38,7 +38,15 @@ const Artikel = () => {
                   >
                     {artikel.Artikel_Title}
                   </Link>
-                  <h3 className="flex-1 py-2 text-lg font-semibold leadi truncate">
+                  <h3
+                    className="flex-1 py-2 text-lg font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
                     {artikel.Artikel_Content}
                   </h3>
                   <div className="flex flex-wrap justify-between pt-3 space-x-2 text-xs dark:text-gray-400">

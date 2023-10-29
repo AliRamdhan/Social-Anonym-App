@@ -4,6 +4,7 @@ import authHeader from "./auth-header";
 const API_URL = "http://localhost:5000/api/v1";
 const API_URL_POST = "http://localhost:5000/api/v1";
 const API_URL_Cerita = "http://localhost:5000/api/v1/cerita";
+const API_URL_Trend = "http://localhost:5000/api/v1/trends";
 
 class UserServices {
   getUserBoard() {
@@ -114,6 +115,31 @@ class UserServices {
 
   getAllArticles() {
     return axios.get(API_URL + "/articles/all");
+  }
+
+  //TREND
+  getTopSolusi() {
+    return axios.get(API_URL_Trend + "/post");
+  }
+  getLatestSolusi() {
+    return axios.get(API_URL_Trend + "/post/latest");
+  }
+  getTopCerita() {
+    return axios.get(API_URL_Trend + "/cerita");
+  }
+
+  getLatestCerita() {
+    return axios.get(API_URL_Trend + "/cerita/latest");
+  }
+  getTopGenreCerita() {
+    return axios.get(API_URL_Trend + "/genre");
+  }
+
+  getTopCeritaByGenre(genreId) {
+    return axios.get(API_URL_Trend + `/genre/top/${genreId}`);
+  }
+  getLatestCeritaByGenre(genreId){
+    return axios.get(API_URL_Trend + `/genre/latest/${genreId}`);
   }
 }
 const UserService = new UserServices();

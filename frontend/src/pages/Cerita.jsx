@@ -18,9 +18,13 @@ export default function Cerita() {
   const [postNarations, setPostNarations] = useState("");
   const [replyIndex, setReplyIndex] = useState(narations.map(() => false));
 
+  const [topCerita, setTopCerita] = useState([]);
+  const [latestCerita, setLatestCerita] = useState([]);
+  const [topGenreCerita, setTopGenreCerita] = useState([]);
   //Count
   const [commentsNarationsCount, setCommentsNarationsCount] = useState("");
   const [likesNarationsCount, setLikesNarationsCount] = useState("");
+
   useEffect(() => {
     UserService.getAllCerita().then((response) => {
       setNarations(response.data.Cerita);
@@ -31,6 +35,16 @@ export default function Cerita() {
     });
     UserService.getAllGenreCerita().then((response) => {
       setGenres(response.data.Genre);
+    });
+
+    UserService.getTopCerita().then((response) => {
+      setTopCerita(response.data.Cerita);
+    });
+    UserService.getTopGenreCerita().then((response) => {
+      setTopGenreCerita(response.data.Genre);
+    });
+    UserService.getLatestCerita().then((response) => {
+      setLatestCerita(response.data.Cerita);
     });
   }, []);
 
@@ -115,7 +129,7 @@ export default function Cerita() {
     <div>
       <Header />
       <div className="w-full min-h-screen flex justify-center px-5">
-        <div className="w-full py-2 px-4">
+        <div className="w-4/6 p-2">
           <div className="w-full h-24 flex flex-col justify-center">
             {user && (
               <div className="font-bold text-3xl text-gray-800">
@@ -287,7 +301,9 @@ export default function Cerita() {
                                   <span className="text-xs text-gray-400 mx-1">
                                     {FormatTime.formatTime(comment.createdAt)}
                                   </span>
-                                  <p className="text-sm my-2">{comment.Comment_Content}</p>
+                                  <p className="text-sm my-2">
+                                    {comment.Comment_Content}
+                                  </p>
                                 </div>
                               </div>
                             ))
@@ -347,7 +363,7 @@ export default function Cerita() {
             </div>
           ))}
         </div>
-        <div className="w-1/2">
+        <div className="w-2/6 mt-24">
           {/* Top Cerita */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
@@ -357,15 +373,35 @@ export default function Cerita() {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {topCerita.map((cerita, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {cerita.Cerita_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                    <p className="mr-2.5">
+                      <span className="font-bold"> {cerita.commentCount} </span>
+                      Comments
+                    </p>
+                    <p className="ml-2.5">
+                      <span className="font-bold">{cerita.likeCount} </span>
+                      Likes
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
 
           {/* Top Genre */}
@@ -377,14 +413,20 @@ export default function Cerita() {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Cerita </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {topGenreCerita.map((genre, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <h2 className="px-4 ml-2 mt-4  font-bold ">
+                    @ {genre.Genre_Cerita}
+                  </h2>
+                  <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
+                    <span className="mr-2.5"> {genre.ceritaCount} Cerita </span>
+                  </p>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
 
           {/* New Cerita */}
@@ -396,15 +438,37 @@ export default function Cerita() {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {latestCerita.map((cerita, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {cerita.Cerita_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                    <p>{FormatTime.formatTime(cerita.createdAt)}</p>
+
+                    <p>||</p>
+                    <p>
+                      {new Date(cerita.createdAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
         </div>
       </div>

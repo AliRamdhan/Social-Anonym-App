@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { Link, useParams } from "react-router-dom";
 import UserService from "../services/user.service";
+import FormatTime from "../services/user.time";
 const Cerita_Genre = () => {
   const { genreName } = useParams();
   const [user, setUser] = useState("");
@@ -15,6 +16,14 @@ const Cerita_Genre = () => {
   const [commentsNarations, setCommentsNarations] = useState([]);
   const [postCommentsNarations, setPostCommentsNarations] = useState({});
   const [replyIndex, setReplyIndex] = useState(genresCerita.map(() => false));
+
+  //TOP
+  const [topCerita, setTopCerita] = useState([]);
+  const [latestCerita, setLatestCerita] = useState([]);
+  //Count
+  const [commentsNarationsCount, setCommentsNarationsCount] = useState("");
+  const [likesNarationsCount, setLikesNarationsCount] = useState("");
+
   useEffect(() => {
     UserService.getUserBoard().then((response) => {
       setUser(response.data.User);
@@ -27,6 +36,14 @@ const Cerita_Genre = () => {
       for (const genre of genres) {
         if (genre.Genre_Cerita === genreName) {
           setGenreId(genre.id);
+          UserService.getTopCeritaByGenre(genre.id).then((response) => {
+            console.log("genre", response.data);
+            setTopCerita(response.data.Cerita);
+          });
+          UserService.getLatestCeritaByGenre(genre.id).then((response) => {
+            console.log("cerita", response.data);
+            setLatestCerita(response.data.Cerita);
+          });
           UserService.getAllCeritaByGenre(genre.id).then((response) => {
             setGenresCerita(response.data.Cerita);
           });
@@ -38,16 +55,22 @@ const Cerita_Genre = () => {
   useEffect(() => {
     // Fetch comments for each cerita
     const newCommentsNarations = [...commentsNarations];
+    const newCommentsNarationsCount = [...commentsNarations];
+    const newLikesNarationsCount = [...commentsNarations];
     genresCerita.forEach(async (narasi, index) => {
       try {
         const response = await UserService.getAllCommentCerita(narasi.id);
         newCommentsNarations[index] = response.data.Comment;
-
+        newCommentsNarationsCount[index] = response.data.Comment.length;
+        const responses = await UserService.getAllLikesCerita(narasi.id);
+        newLikesNarationsCount[index] = responses.data.LikeCount;
         if (index === genresCerita.length - 1) {
           setCommentsNarations(newCommentsNarations);
+          setCommentsNarationsCount(newCommentsNarationsCount);
+          setLikesNarationsCount(newLikesNarationsCount);
         }
       } catch (error) {
-        console.error("Error fetching comments:", error);
+        console.error("Erroresr fetching comments:", error);
       }
     });
   }, [genresCerita]);
@@ -86,11 +109,32 @@ const Cerita_Genre = () => {
       console.log(error.message);
     }
   };
+
+  const createLikesCerita = async (ceritaId) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/v1/cerita/likes/create",
+        {
+          Likes_Cerita: ceritaId,
+          Likes_Users: user.id,
+        }
+      );
+      if (response) {
+        alert("like posts");
+        window.location.reload();
+      } else {
+        alert("likes failed");
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+
   return (
     <div>
       <Header />
       <div className="w-full min-h-screen flex justify-center px-5">
-        <div className="w-full py-2 px-4">
+        <div className="w-4/6 p-2">
           <div className="w-full h-24 flex flex-col justify-center">
             {/* <div className="font-bold text-3xl text-gray-800">
                 Hello,
@@ -145,13 +189,13 @@ const Cerita_Genre = () => {
                       </div>
                       <div className="w-full flex justify-between items-center ml-6 font-medium pr-8">
                         <p className="text-base leading-6 cursor-default">
-                          dadsadas
+                          {`anon.user`}
                           <span className="text-sm leading-5 font-medium text-gray-400 pl-2">
-                            dsadasdsa
+                            {FormatTime.formatTime(cerita.createdAt)}
                           </span>
                         </p>
                         <p className="text-sm leading-5 font-medium text-gray-400">
-                          horor
+                          {genreName}
                         </p>
                       </div>
                     </div>
@@ -160,10 +204,7 @@ const Cerita_Genre = () => {
                 <div className="pl-16">
                   <Link to={`/cerita/${cerita.id}`}>
                     <p className="text-base width-auto font-medium  flex-shrink">
-                      Lorem ipsum dolor sit amet consectetur, adipisicing elit.
-                      Officiis quas alias quis necessitatibus aliquid tempore,
-                      harum sapiente velit ipsum reiciendis autem ex quisquam in
-                      voluptates repellendus ipsa non dolor soluta.
+                      {cerita.Cerita_Content}
                     </p>
                   </Link>
                   <div className="w-full mt-2">
@@ -175,11 +216,10 @@ const Cerita_Genre = () => {
                           newArray[index] = !newArray[index];
                           setReplyIndex(newArray);
                         }}
-                        // onClick={() => setReplyIndex(!replyIndex)}
                       >
                         <div className="w-36 rounded-r-full overflow-hidden flex -space-x-3"></div>
                         <div className="text-base text-gray-400 font-semibold">
-                          32 replies
+                          {commentsNarationsCount[index]} replies
                         </div>
                         <div
                           className={`transition transition-transform duration-300 ${
@@ -201,20 +241,29 @@ const Cerita_Genre = () => {
                         </div>
                       </div>
                       <div className="text-center flex gap-2">
-                        <svg
-                          className="text-center text-gray-400 h-6 w-6"
-                          fill="none"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            createLikesCerita(cerita.id);
+                          }}
                         >
-                          <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
+                          <button type="submit">
+                            <svg
+                              className="text-center text-gray-400 h-6 w-6"
+                              fill="none"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                          </button>
+                        </form>
 
                         <div className="text-[16px] text-gray-400 font-semibold">
-                          {34} likes
+                          {likesNarationsCount[index]} likes
                         </div>
                       </div>
                     </div>
@@ -226,11 +275,13 @@ const Cerita_Genre = () => {
                             commentsNarations[index].map((comment) => (
                               <div className="w-full mt-2" key={comment.id}>
                                 <div className="flex-1 px-4 py-2 mt-1">
-                                  <strong>username</strong>{" "}
+                                  <strong>{`anon.user`}</strong>{" "}
                                   <span className="text-xs text-gray-400 mx-1">
-                                    time
+                                    {FormatTime.formatTime(comment.createdAt)}
                                   </span>
-                                  <p className="text-sm my-2">contentt</p>
+                                  <p className="text-sm my-2">
+                                    {comment.Comment_Content}
+                                  </p>
                                 </div>
                               </div>
                             ))
@@ -290,7 +341,7 @@ const Cerita_Genre = () => {
             </div>
           ))}
         </div>
-        <div className="w-1/2">
+        <div className="w-2/6 mt-24">
           {/* Top Solusi */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
@@ -300,15 +351,35 @@ const Cerita_Genre = () => {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {topCerita.map((cerita, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {cerita.Cerita_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                    <p className="mr-2.5">
+                      <span className="font-bold"> {cerita.commentCount} </span>
+                      Comments
+                    </p>
+                    <p className="ml-2.5">
+                      <span className="font-bold">{cerita.likeCount} </span>
+                      Likes
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
 
           {/* New Solusi */}
@@ -320,15 +391,37 @@ const Cerita_Genre = () => {
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div className="flex-1">
-              <h2 className="px-4 ml-2 mt-4  font-bold ">@ Curhat</h2>
-              <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
-                <span className="mr-2.5"> 5,466 Comments </span>{" "}
-                <span className="ml-2.5"> 5,466 Likes </span>
-              </p>
-            </div>
-            <hr className="border-gray-400" />
+            {latestCerita.map((cerita, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {cerita.Cerita_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                    <p>{FormatTime.formatTime(cerita.createdAt)}</p>
+
+                    <p>||</p>
+                    <p>
+                      {new Date(cerita.createdAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
         </div>
       </div>
