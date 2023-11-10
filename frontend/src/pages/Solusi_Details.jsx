@@ -7,11 +7,11 @@ import Footer from "../components/Feature/Footer";
 import UserService from "../services/user.service";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
+import FormatTime from "../services/user.time";
 const Solusi_Details = () => {
+  const { solusiId } = useParams();
   const [user, setUser] = useState("");
-  const [liked, setLiked] = useState([]);
   const [solutions, setSolutions] = useState("");
-  const [likeCount, setLikeCount] = useState("");
   //Comment Post
   const [commentSolutions, setCommentSolutions] = useState([]);
   const [postCommentSolutions, setPostCommentSolutions] = useState("");
@@ -21,7 +21,11 @@ const Solusi_Details = () => {
   const [replyIndex, setReplyIndex] = useState(
     commentSolutions.map(() => false)
   );
-  const { solusiId } = useParams();
+  //count
+  const [likeCount, setLikeCount] = useState(null);
+  const [commentCount, setCommentCount] = useState(null);
+  const [topSolusi, setTopSolusi] = useState([]);
+  const [latestSolusi, setLatestSolusi] = useState([]);
   useEffect(() => {
     UserService.getDetailsOnePost(solusiId).then((response) => {
       setSolutions(response.data.Post);
@@ -30,21 +34,31 @@ const Solusi_Details = () => {
       setUser(response.data.User.id);
     });
     UserService.getAllLikesPost(solusiId).then((response) => {
-      setLiked(response.data.Likes);
       setLikeCount(response.data.Likes.length);
     });
     UserService.getAllCommentPost(solusiId).then((response) => {
       setCommentSolutions(response.data.Comments);
+      setCommentCount(response.data.Comments.length);
+
+      UserService.getTopSolusi().then((response) => {
+        setTopSolusi(response.data.Post);
+      });
+
+      UserService.getLatestSolusi().then((response) => {
+        setLatestSolusi(response.data.Post);
+      });
     });
   }, [solusiId]);
 
   useEffect(() => {
     // Fetch comments for each post
     const newRepliesComment = [...repliesComments];
+    const newRepliesCommentCount = [...repliesComments];
     commentSolutions.forEach(async (comment, index) => {
       try {
         const response = await UserService.getAllRepliesComment(comment.id);
         newRepliesComment[index] = response.data.Replies;
+        comment.replyCount = response.data.Replies.length;
         if (index === commentSolutions.length - 1) {
           setRepliesComments(newRepliesComment);
         }
@@ -120,9 +134,9 @@ const Solusi_Details = () => {
   return (
     <div>
       <Header />
-      <div className="w-full min-h-screen flex justify-between gap-8 pt-4 px-5">
+      <div className="w-full min-h-screen flex justify-between gap-8 px-5 py-4">
         {solutions && (
-          <div className="w-full">
+          <div className="w-4/6 p-2">
             <div className="flex flex-shrink-0">
               <div className="flex items-center">
                 <div>
@@ -134,9 +148,9 @@ const Solusi_Details = () => {
                 </div>
                 <div className="ml-3">
                   <p className="text-base leading-6 font-medium">
-                    {solutions.user.User_username}
+                    {`anon.user`}
                     <span className="pl-2 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-                      date at
+                      {FormatTime.formatTime(solutions.createdAt)}
                     </span>
                   </p>
                 </div>
@@ -153,7 +167,7 @@ const Solusi_Details = () => {
                       {/* LIKES */}
                       <button onClick={createLikesPost}>
                         <svg
-                          className="text-center text-gray-400 h-6 w-6"
+                          className="text-center text-gray-600 h-6 w-6"
                           fill={`none`}
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -173,7 +187,7 @@ const Solusi_Details = () => {
                     <div className="w-36 group flex justify-center items-center  text-[15.5px] leading-5 font-medium">
                       <div>
                         <svg
-                          className="text-center text-gray-400 h-6 w-7"
+                          className="text-center text-gray-600 h-6 w-6"
                           fill="none"
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -185,7 +199,8 @@ const Solusi_Details = () => {
                         </svg>
                       </div>
                       <p className="pl-2 text-gray-400 ">
-                        <span className="font-semibold">32</span> Comments
+                        <span className="font-semibold">{commentCount}</span>{" "}
+                        Comments
                       </p>
                     </div>
                   </div>
@@ -242,16 +257,16 @@ const Solusi_Details = () => {
                       </div>
                       <div className="ml-3">
                         <p className="text-base leading-6 font-medium">
-                          comment username
+                          {`anon.user`}
                           <span className="pl-2 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-                            22/02/12
+                            {FormatTime.formatTime(comment.createdAt)}
                           </span>
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="pl-16">
-                    <p> content comment</p>
+                    <p> {comment.Comment_Content}</p>
                     <div className="w-full mt-2">
                       <div className="flex gap-4 items-center">
                         <div
@@ -265,7 +280,7 @@ const Solusi_Details = () => {
                         >
                           <div className="w-36 rounded-r-full overflow-hidden flex -space-x-3"></div>
                           <div className="text-base text-gray-400 font-semibold">
-                            32 replies
+                            {comment.replyCount} replies
                           </div>
                           <div
                             className={`transition transition-transform duration-300 ${
@@ -314,14 +329,18 @@ const Solusi_Details = () => {
                         <>
                           {repliesComments[index] &&
                           repliesComments[index].length > 0 ? (
-                            repliesComments[index].map((reply) => (
-                              <div className="w-full mt-2" key={reply.id}>
+                            repliesComments[index].map((reply, index) => (
+                              <div className="w-full mt-2" key={index}>
                                 <div className="flex-1 px-4 py-2 mt-1">
-                                  <strong>username</strong>{" "}
-                                  <span className="text-xs text-gray-400 mx-1">
-                                    title
-                                  </span>
-                                  <p className="text-sm">contentt</p>
+                                  <p>
+                                    {`anon.user`}
+                                    <span className="text-xs text-gray-400 ml-2">
+                                      {FormatTime.formatTime(reply.createdAt)}
+                                    </span>
+                                  </p>{" "}
+                                  <p className="text-sm p-4">
+                                    {reply.Reply_Content}
+                                  </p>
                                 </div>
                               </div>
                             ))
@@ -382,56 +401,87 @@ const Solusi_Details = () => {
               ))}
           </div>
         )}
-        <div className="w-1/3">
+        <div className="w-2/6">
+          {/* Top Solusi */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
               <div className="flex-1 mx-1 my-1.5">
                 <h2 className="px-4 py-1 text-xl w-full font-semibold ">
-                  Topik yang lagi trend
+                  Top Solusi
                 </h2>
               </div>
             </div>
-            <hr className="border-gray-600" />
-            <div>
-              <Link>
+            {topSolusi.map((solusi, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
                 <div className="flex-1">
-                  <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">#Curhat</h2>
-                  <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                    5,466 Tweets
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {solusi.Post_Content}
                   </p>
+                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                    <p className="mr-2.5">
+                      <span className="font-bold"> {solusi.commentCount}</span>{" "}
+                      Comments
+                    </p>
+                    <p className="ml-2.5">
+                      <span className="font-bold">{solusi.likeCount} </span>{" "}
+                      Likes{" "}
+                    </p>
+                  </div>
                 </div>
-              </Link>
-              <hr className="border-gray-400" />
-              <Link>
-                <div className="flex-1">
-                  <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">#Sharing</h2>
-                  <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                    5,466 Tweets
-                  </p>
-                </div>
-              </Link>
-              <hr className="border-gray-400" />
-              <Link>
-                <div className="flex-1">
-                  <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">
-                    #MintaPendapat
-                  </h2>
-                  <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                    5,466 Tweets
-                  </p>
-                </div>
-              </Link>
-              <hr className="border-gray-400" />
-              <Link>
-                <div className="flex-1">
-                  <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">#Random</h2>
-                  <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                    5,466 Tweets
-                  </p>
-                </div>
-              </Link>
-              <hr className="border-gray-400" />
+                <hr className="border-gray-400" />
+              </div>
+            ))}
+          </div>
+
+          {/* New Solusi */}
+          <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
+            <div className="flex">
+              <div className="flex-1 mx-1 my-1.5">
+                <h2 className="px-4 py-1 text-xl w-full font-semibold ">
+                  Latest Solusi
+                </h2>
+              </div>
             </div>
+            {latestSolusi.map((solusi, index) => (
+              <div key={index}>
+                <hr className="border-gray-600" />
+                <div className="flex-1">
+                  <p
+                    className="px-4 ml-2 mt-4 font-semibold"
+                    style={{
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                    }}
+                  >
+                    @ {solusi.Post_Content}
+                  </p>
+                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                    <p>{FormatTime.formatTime(solusi.createdAt)}</p>
+
+                    <p>||</p>
+                    <p>
+                      {new Date(solusi.createdAt).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}{" "}
+                    </p>
+                  </div>
+                </div>
+                <hr className="border-gray-400" />
+              </div>
+            ))}
           </div>
         </div>
       </div>

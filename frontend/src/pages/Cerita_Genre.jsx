@@ -37,11 +37,9 @@ const Cerita_Genre = () => {
         if (genre.Genre_Cerita === genreName) {
           setGenreId(genre.id);
           UserService.getTopCeritaByGenre(genre.id).then((response) => {
-            console.log("genre", response.data);
             setTopCerita(response.data.Cerita);
           });
           UserService.getLatestCeritaByGenre(genre.id).then((response) => {
-            console.log("cerita", response.data);
             setLatestCerita(response.data.Cerita);
           });
           UserService.getAllCeritaByGenre(genre.id).then((response) => {
@@ -342,7 +340,7 @@ const Cerita_Genre = () => {
           ))}
         </div>
         <div className="w-2/6 mt-24">
-          {/* Top Solusi */}
+          {/* Top Cerita Genre */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
               <div className="flex-1 mx-1 my-1.5">
@@ -354,9 +352,9 @@ const Cerita_Genre = () => {
             {topCerita.map((cerita, index) => (
               <div key={index}>
                 <hr className="border-gray-600" />
-                <div className="flex-1">
+                <div className="flex-1 px-4 ml-2">
                   <p
-                    className="px-4 ml-2 mt-4 font-semibold"
+                    className="mt-4 font-semibold"
                     style={{
                       display: "-webkit-box",
                       WebkitBoxOrient: "vertical",
@@ -366,7 +364,10 @@ const Cerita_Genre = () => {
                   >
                     @ {cerita.Cerita_Content}
                   </p>
-                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                  <p className="ml-5 mt-1 text-xs text-gray-400">
+                    {cerita.Genre.Genre_Cerita}
+                  </p>
+                  <div className="my-1.5 text-sm text-gray-400 flex">
                     <p className="mr-2.5">
                       <span className="font-bold"> {cerita.commentCount} </span>
                       Comments
@@ -382,7 +383,7 @@ const Cerita_Genre = () => {
             ))}
           </div>
 
-          {/* New Solusi */}
+          {/* New Cerita Genre */}
           <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
             <div className="flex">
               <div className="flex-1 mx-1 my-1.5">
@@ -394,9 +395,9 @@ const Cerita_Genre = () => {
             {latestCerita.map((cerita, index) => (
               <div key={index}>
                 <hr className="border-gray-600" />
-                <div className="flex-1">
+                <div className="flex-1 px-4 ml-2">
                   <p
-                    className="px-4 ml-2 mt-4 font-semibold"
+                    className="mt-4 font-semibold"
                     style={{
                       display: "-webkit-box",
                       WebkitBoxOrient: "vertical",
@@ -406,7 +407,10 @@ const Cerita_Genre = () => {
                   >
                     @ {cerita.Cerita_Content}
                   </p>
-                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                  <p className="ml-5 mt-1 text-xs text-gray-400">
+                    {cerita.Genre.Genre_Cerita}
+                  </p>
+                  <div className="my-1.5 text-xs text-gray-400 flex gap-2">
                     <p>{FormatTime.formatTime(cerita.createdAt)}</p>
 
                     <p>||</p>

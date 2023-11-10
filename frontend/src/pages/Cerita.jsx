@@ -376,9 +376,9 @@ export default function Cerita() {
             {topCerita.map((cerita, index) => (
               <div key={index}>
                 <hr className="border-gray-600" />
-                <div className="flex-1">
+                <div className="flex-1 px-4 ml-2">
                   <p
-                    className="px-4 ml-2 mt-4 font-semibold"
+                    className="mt-4 font-semibold"
                     style={{
                       display: "-webkit-box",
                       WebkitBoxOrient: "vertical",
@@ -388,7 +388,10 @@ export default function Cerita() {
                   >
                     @ {cerita.Cerita_Content}
                   </p>
-                  <div className="px-4 ml-2 my-1.5 text-sm text-gray-400 flex">
+                  <p className="mt-1 text-xs text-gray-400">
+                    {cerita.Genre.Genre_Cerita}
+                  </p>
+                  <div className="my-1.5 text-sm text-gray-400 flex">
                     <p className="mr-2.5">
                       <span className="font-bold"> {cerita.commentCount} </span>
                       Comments
@@ -441,9 +444,9 @@ export default function Cerita() {
             {latestCerita.map((cerita, index) => (
               <div key={index}>
                 <hr className="border-gray-600" />
-                <div className="flex-1">
+                <div className="flex-1 px-4 ml-2">
                   <p
-                    className="px-4 ml-2 mt-4 font-semibold"
+                    className="mt-4 font-semibold"
                     style={{
                       display: "-webkit-box",
                       WebkitBoxOrient: "vertical",
@@ -453,7 +456,10 @@ export default function Cerita() {
                   >
                     @ {cerita.Cerita_Content}
                   </p>
-                  <div className="px-4 ml-2 my-1.5 text-xs text-gray-400 flex gap-2">
+                  <p className="mt-1 text-xs text-gray-400">
+                    {cerita.Genre.Genre_Cerita}
+                  </p>
+                  <div className="my-1.5 text-xs text-gray-400 flex gap-2">
                     <p>{FormatTime.formatTime(cerita.createdAt)}</p>
 
                     <p>||</p>

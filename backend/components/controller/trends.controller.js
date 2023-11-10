@@ -75,6 +75,12 @@ const getTopCerita = async (req, res) => {
           "commentCount",
         ],
       ],
+      include: [
+        {
+          model: Genre,
+          attributes: ["Genre_Cerita"],
+        },
+      ],
       order: [sequelize.literal("likeCount + commentCount DESC")],
       limit: 5, // Limit the result to the top 5 trending posts
     });
@@ -87,6 +93,12 @@ const getTopCerita = async (req, res) => {
 const getLatestCerita = async (req, res) => {
   try {
     const cerita = await Cerita.findAll({
+      include: [
+        {
+          model: Genre,
+          attributes: ["Genre_Cerita"],
+        },
+      ],
       order: [["createdAt", "DESC"]],
       limit: 5,
     });
@@ -120,9 +132,14 @@ const getTopGenreCerita = async (req, res) => {
 const getTopCeritaByGenre = async (req, res) => {
   try {
     const topCerita = await Cerita.findAll({
-      where: { Cerita_Genre: req.params.genreId }, // Filter by genreId
+      where: { Cerita_Genre: req.params.genreId },
+      include: [
+        {
+          model: Genre,
+          attributes: ["Genre_Cerita"],
+        },
+      ],
       attributes: [
-        "id", // Include any other fields you want to retrieve
         "Cerita_Content",
         "createdAt",
         [
@@ -153,7 +170,13 @@ const getTopCeritaByGenre = async (req, res) => {
 const getLatestCeritaByGenre = async (req, res) => {
   try {
     const cerita = await Cerita.findAll({
-      where: { Cerita_Genre: req.params.genreId }, // Filter by genreId
+      where: { Cerita_Genre: req.params.genreId },
+      include: [
+        {
+          model: Genre,
+          attributes: ["Genre_Cerita"],
+        },
+      ],
       order: [["createdAt", "DESC"]],
       limit: 5, // Limit the result to the top 5 trending posts
     });

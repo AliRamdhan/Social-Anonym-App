@@ -3,29 +3,42 @@ import Header from "../components/Feature/Header";
 import Footer from "../components/Feature/Footer";
 import Default from "../images/default.png";
 import { Link, useParams } from "react-router-dom";
+import FormatTime from "../services/user.time";
 import UserService from "../services/user.service";
 const Cerita_Details = () => {
-  const [replyIndex, setReplyIndex] = useState(false);
   const [narations, setNarations] = useState("");
   const [ceritaComments, setCeritaComments] = useState([]);
   const [postCeritaComments, setPostCeritaComments] = useState("");
+  const [topCerita, setTopCerita] = useState([]);
+  const [topGenreCerita, setTopGenreCerita] = useState([]);
+  const [likesCounts, setLikesCounts] = useState(null);
+  const [commentsCounts, setCommentsCounts] = useState(null);
   const [user, setUser] = useState("");
   const { ceritaId } = useParams();
+
   useEffect(() => {
     UserService.getUserBoard().then((response) => {
-      // console.log(response.data.User);
       setUser(response.data.User);
+    });
+    UserService.getTopCerita().then((response) => {
+      setTopCerita(response.data.Cerita);
+    });
+    UserService.getTopGenreCerita().then((response) => {
+      setTopGenreCerita(response.data.Genre);
     });
   }, []);
 
   useEffect(() => {
     UserService.getDetailsOneCerita(ceritaId).then((response) => {
-      // console.log(response.data.Cerita);
       setNarations(response.data.Cerita);
     });
     UserService.getAllCommentCerita(ceritaId).then((response) => {
-      // console.log(response.data.Comment);
       setCeritaComments(response.data.Comment);
+      console.log(response.data.Comment);
+      setCommentsCounts(response.data.Comment.length);
+    });
+    UserService.getAllLikesCerita(ceritaId).then((response) => {
+      setLikesCounts(response.data.LikeCount);
     });
   }, [ceritaId]);
 
@@ -49,10 +62,10 @@ const Cerita_Details = () => {
   return (
     <div>
       <Header />
-      <div className="w-full min-h-screen flex justify-between gap-8 pt-4 px-5">
+      <div className="w-full min-h-screen flex justify-between gap-3 py-4 px-5">
         {narations && (
           <>
-            <div className="w-full">
+            <div className="w-4/6 p-2">
               <div className="flex flex-shrink-0">
                 <div className="flex items-center">
                   <div>
@@ -64,9 +77,9 @@ const Cerita_Details = () => {
                   </div>
                   <div className="ml-3">
                     <p className="text-base leading-6 font-medium">
-                      username
+                      {`anon.user`}
                       <span className="pl-2 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-                        date at
+                        {FormatTime.formatTime(narations.createdAt)}
                       </span>
                     </p>
                   </div>
@@ -74,7 +87,7 @@ const Cerita_Details = () => {
               </div>
               <div className="pl-14">
                 <p className="text-base width-auto font-medium  flex-shrink py-4">
-                  content
+                  {narations.Cerita_Content}
                 </p>
                 <div className="flex">
                   <div className="w-full">
@@ -82,14 +95,14 @@ const Cerita_Details = () => {
                       <div className="text-[15.5px] leading-5 font-medium  group flex items-center ">
                         {/* LIKES */}
                         <form>
-                          <div>
+                          <div className="flex justify-center items-center">
                             <button type="submit">
                               <svg
-                                className="text-center text-gray-600 h-7 w-7"
+                                className="text-center text-gray-600 h-6 w-6"
                                 fill="none"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                // strokeWidth="0"
+                                strokeWidth="2"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -99,26 +112,28 @@ const Cerita_Details = () => {
                           </div>
                         </form>
                         <p className="pl-2 text-gray-400 ">
-                          <span className="font-semibold">34</span> Likes
+                          <span className="font-semibold">{likesCounts}</span>{" "}
+                          Likes
                         </p>
                       </div>
 
-                      <div className="group flex justify-center items-center  text-[15.5px] leading-5 font-medium">
-                        <div>
-                          <svg
-                            className="text-center text-gray-400 h-7 w-7"
-                            fill="none"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                          </svg>
-                        </div>
+                      <div className="flex justify-center items-center  text-[15.5px] leading-5 font-medium">
+                        <svg
+                          className="text-center text-gray-600 h-6 w-6"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                        </svg>
                         <p className="pl-2 text-gray-400 ">
-                          <span className="font-semibold">32</span> Comments
+                          <span className="font-semibold">
+                            {commentsCounts}
+                          </span>{" "}
+                          Comments
                         </p>
                       </div>
                     </div>
@@ -178,153 +193,94 @@ const Cerita_Details = () => {
                         </div>
                         <div className="ml-3">
                           <p className="text-base leading-6 font-medium">
-                            comment username
+                            {`anon.user`}
                             <span className="pl-2 text-sm leading-5 font-medium text-gray-400 group-hover:text-gray-300 transition ease-in-out duration-150">
-                              22/02/12
+                              {FormatTime.formatTime(comments.createdAt)}
                             </span>
                           </p>
                         </div>
                       </div>
                     </div>
-                    <div className="pl-16">
-                      content comment
-                      <div className="flex">
-                        <div className="w-full">
-                          <div className="flex items-center">
-                            <div className="text-center">
-                              <div className="w-12  group flex items-center text-gray-500 text-base leading-6 font-medium rounded-full hover:text-gray-500">
-                                <svg
-                                  onClick={() => setReplyIndex(!replyIndex)}
-                                  className="text-center h-6 w-6"
-                                  fill="none"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                              </div>
-                            </div>
-
-                            <div className="text-center m-2">
-                              <div className="w-12  group flex items-center text-gray-500 text-base leading-6 font-medium rounded-full hover:text-gray-500">
-                                <svg
-                                  className="text-center h-7 w-6"
-                                  fill="none"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                </svg>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {replyIndex && (
-                        <>
-                          <div className="w-full mt-2">
-                            <div className="flex-1 px-4 py-2 mt-1">
-                              <strong> dwadwa</strong>
-                              <span className="text-xs text-gray-400 mx-1">
-                                dwadawd
-                              </span>
-                              <p className="text-sm">dadwad</p>
-                            </div>
-                          </div>
-
-                          <form className="w-full rounded-lg">
-                            <div className="flex flex-col pb-4">
-                              <div className="w-full flex justify-center">
-                                <div className="w-full px-4 mb-2 mt-2">
-                                  <textarea
-                                    className="rounded border leading-normal resize-none w-full font-medium placeholder-gray-700 focus:outline-none focus:bg-white p-2"
-                                    name="body"
-                                    placeholder="Type Your Replies Comment"
-                                    required
-                                    rows="3"
-                                  ></textarea>
-                                </div>
-                              </div>
-                              <div className="w-full flex justify-between px-5">
-                                <div></div>
-                                <button
-                                  type="submit"
-                                  className="bg-white text-gray-700 font-medium py-1 px-4 border border-gray-400 rounded-lg tracking-wide mr-1 hover:bg-gray-100"
-                                >
-                                  Reply
-                                </button>
-                              </div>
-                            </div>
-                          </form>
-                        </>
-                      )}
+                    <div className="pl-14 pb-2">
+                      {comments.Comment_Content}
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="w-1/3">
+            <div className="w-2/6">
+              {/* Top Cerita */}
               <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
                 <div className="flex">
                   <div className="flex-1 mx-1 my-1.5">
                     <h2 className="px-4 py-1 text-xl w-full font-semibold ">
-                      Topik yang lagi trend
+                      Top Cerita
                     </h2>
                   </div>
                 </div>
-                <hr className="border-gray-600" />
-                <div>
-                  <Link>
-                    <div className="flex-1">
-                      <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">
-                        #Curhat
-                      </h2>
-                      <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                        5,466 Tweets
+                {topCerita.map((cerita, index) => (
+                  <div key={index}>
+                    <hr className="border-gray-600" />
+                    <div className="flex-1 px-4 ml-2">
+                      <p
+                        className="mt-4 font-semibold"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 3,
+                          overflow: "hidden",
+                        }}
+                      >
+                        @ {cerita.Cerita_Content}
                       </p>
-                    </div>
-                  </Link>
-                  <hr className="border-gray-400" />
-                  <Link>
-                    <div className="flex-1">
-                      <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">
-                        #Sharing
-                      </h2>
-                      <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                        5,466 Tweets
+                      <p className="mt-1 text-xs text-gray-400">
+                        {cerita.Genre.Genre_Cerita}
                       </p>
+                      <div className="my-1.5 text-sm text-gray-400 flex">
+                        <p className="mr-2.5">
+                          <span className="font-bold">
+                            {" "}
+                            {cerita.commentCount}{" "}
+                          </span>
+                          Comments
+                        </p>
+                        <p className="ml-2.5">
+                          <span className="font-bold">{cerita.likeCount} </span>
+                          Likes
+                        </p>
+                      </div>
                     </div>
-                  </Link>
-                  <hr className="border-gray-400" />
-                  <Link>
-                    <div className="flex-1">
-                      <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">
-                        #MintaPendapat
-                      </h2>
-                      <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                        5,466 Tweets
-                      </p>
-                    </div>
-                  </Link>
-                  <hr className="border-gray-400" />
-                  <Link>
-                    <div className="flex-1">
-                      <h2 className="px-4 ml-2 mt-4 w-48 font-bold ">
-                        #Random
-                      </h2>
-                      <p className="px-4 ml-2 mb-2 w-48 text-xs text-gray-400">
-                        5,466 Tweets
-                      </p>
-                    </div>
-                  </Link>
-                  <hr className="border-gray-400" />
+                    <hr className="border-gray-400" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Top Genre */}
+              <div className="w-full rounded-lg overflow-hidden bg-white shadow-md px-4 pt-3 pb-6 mt-4">
+                <div className="flex">
+                  <div className="flex-1 mx-1 my-1.5">
+                    <h2 className="px-4 py-1 text-xl w-full font-semibold ">
+                      Top Topic
+                    </h2>
+                  </div>
                 </div>
+                {topGenreCerita.map((genre, index) => (
+                  <div key={index}>
+                    <hr className="border-gray-600" />
+                    <div className="flex-1">
+                      <h2 className="px-4 ml-2 mt-4  font-bold ">
+                        @ {genre.Genre_Cerita}
+                      </h2>
+                      <p className="px-4 ml-2 my-1.5 text-xs text-gray-400">
+                        <span className="mr-2.5">
+                          {" "}
+                          {genre.ceritaCount} Cerita{" "}
+                        </span>
+                      </p>
+                    </div>
+                    <hr className="border-gray-400" />
+                  </div>
+                ))}
               </div>
             </div>
           </>

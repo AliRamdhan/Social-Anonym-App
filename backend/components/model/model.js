@@ -105,7 +105,6 @@ async function dropTable() {
     await Solutions_Posts.drop({ cascade: true });
     await Cerita_Likes.drop({ cascade: true });
     await Cerita_Comments.drop({ cascade: true });
-    await Cerita_Replies.drop({ cascade: true });
     await Cerita.drop({ cascade: true });
     await Users.drop({ cascade: true });
     await Role.drop({ cascade: true });
